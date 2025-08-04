@@ -1,10 +1,10 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 using Meta.XR.Samples;
-using Unity.Sentis;
+using Unity.InferenceEngine;
 using UnityEditor;
 using UnityEngine;
-using FF = Unity.Sentis.Functional;
+using FF = Unity.InferenceEngine.Functional;
 
 namespace PassthroughCameraSamples.MultiObjectDetection.Editor
 {
@@ -61,8 +61,8 @@ namespace PassthroughCameraSamples.MultiObjectDetection.Editor
             var boxCorners = FF.MatMul(boxCoords, centersToCorners);    //shape=(N,4)
             var indices = FF.NMS(boxCorners, scores, m_iouThreshold, m_scoreThreshold); //shape=(N)
             var indices2 = indices.Unsqueeze(-1).BroadcastTo(new[] { 4 });  //shape=(N,4)
-            var labelIDs = FF.Gather(classIDs, 0, indices); //shape=(N)
-            var coords = FF.Gather(boxCoords, 0, indices2); //shape=(N,4)
+            var labelIDs = classIDs.Gather(0, indices); //shape=(N)
+            var coords = boxCoords.Gather(0, indices2); //shape=(N,4)
 
             var modelFinal = graph.Compile(coords, labelIDs);
 
